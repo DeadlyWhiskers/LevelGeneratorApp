@@ -1,5 +1,5 @@
 // import React from 'react';
-import {toggleTheme} from "../../../shared/lib/theme-lib";
+import {toggleTheme} from "@/shared/lib/theme-lib";
 
 const ThemeToggle = () => {
     return (
