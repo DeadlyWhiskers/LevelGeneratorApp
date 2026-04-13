@@ -8,6 +8,7 @@ export default {
   theme: {
     extend: {
       colors: {
+        blockColor: 'var(--block-color)',
         background: 'var(--background)',
         text: 'var(--text-color)',
         accentGreen: 'var(--accent-green)',
@@ -18,6 +19,9 @@ export default {
         mediumBackground: 'var(--medium-background)',
         highColor: 'var(--high-color)',
         highBackground: 'var(--high-background)',
+      },
+      fontFamily: {
+        roboto:['Roboto', 'sans-serif'],
       }
     },
   },
