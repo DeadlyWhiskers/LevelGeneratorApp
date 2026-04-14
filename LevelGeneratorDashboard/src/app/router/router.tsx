@@ -1,5 +1,5 @@
 import {createBrowserRouter} from "react-router";
-import React from "react";
+// import React from "react";
 import Layout from "@/widgets/layout";
 import {appRoutes} from "@/shared/routes";
 

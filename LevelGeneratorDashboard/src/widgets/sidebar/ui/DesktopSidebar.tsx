@@ -1,6 +1,6 @@
-import React from 'react';
+// import React from 'react';
 import burgerIcon from '@/shared/assets/icons/burger.png'
-import Button from "@/shared/ui/button";
+import {Button} from "@/shared/ui/button";
 import SidebarNavlink from "@/widgets/sidebar/ui/SidebarNavlink.tsx";
 import {useSidebarState} from "@/widgets/sidebar/hook/useSidebarState.ts";
 import {appRoutes} from "@/shared/routes";
@@ -18,7 +18,7 @@ const DesktopSidebar = () => {
             `}>
             {/*    Хедер для сайдбара (возможно в отдельный компонент)*/}
             <div className='flex flex-row justify-between items-center p-2.5 shadow h-fit whitespace-nowrap g-0'>
-                {!isCollapsed && <h2 className={`text-xl col-text
+                {!isCollapsed && <h2 className={`text-text text-xl col-text
                  transition-all duration-100 ease-in-out `}>
                     Вкладки
                 </h2>}

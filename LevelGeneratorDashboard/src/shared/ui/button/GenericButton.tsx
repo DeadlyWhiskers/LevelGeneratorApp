@@ -6,10 +6,10 @@ type ButtonProps = {
     className?: string;
 }
 
-const Button = ({children, onClick, className}: ButtonProps) => {
+const GenericButton = ({children, onClick, className}: ButtonProps) => {
     return (
         <button onClick={onClick}
-                className={`animated flex flex-row gap-2.5 p-1.5 rounded-md text-white text-2xl font-bold h-fit w-fit
+                className={`animated flex flex-row
                  transition-all duration-100 ease-in-out
                  hover:text-accentBlue
         // Это прикольно, может даже оставлю
@@ -24,4 +24,4 @@ const Button = ({children, onClick, className}: ButtonProps) => {
     );
 };
 
-export {Button};
+export {GenericButton};

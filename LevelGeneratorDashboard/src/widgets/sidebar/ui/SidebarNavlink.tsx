@@ -1,4 +1,4 @@
-import React from 'react';
+// import React from 'react';
 import {NavLink} from "react-router";
 import '@/shared/ui/animated'
 
@@ -12,7 +12,7 @@ type SidebarNavlinkProps = {
 const SidebarNavlink = ({to, isCollapsed, title, iconPath}: SidebarNavlinkProps) => {
     return (
         <NavLink to={to} className={({isActive}) => `${isActive ? "bg-background" : "bg-blockColor"}
-        animated  min-h-8 flex flex-row justify-between items-center rounded-md px-2.5 py-1 text-base transition-all duration-100 ease-in-out 
+        animated  min-h-8 flex flex-row justify-between items-center rounded-md px-2.5 py-1 text-text text-base transition-all duration-100 ease-in-out 
         hover:text-accentBlue
         // Это прикольно, может даже оставлю
         hover:scale-105

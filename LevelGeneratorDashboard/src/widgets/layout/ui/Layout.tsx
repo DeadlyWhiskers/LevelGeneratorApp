@@ -1,6 +1,8 @@
-import React from 'react';
-import {NavLink, Outlet} from "react-router";
+// import React from 'react';
+import {Outlet} from "react-router";
 import DesktopSidebar from "@/widgets/sidebar";
+import PageName from "@/features/page-name/ui/PageName.tsx";
+import ThemeToggle from "@/features/theme-switcher";
 
 const Layout = () => {
     return (
@@ -14,15 +16,19 @@ const Layout = () => {
             {/*        страничка</NavLink>*/}
             {/*</div>*/}
             <DesktopSidebar/>
-            <div className="bg-purple-500 flex-1">
-                <div className="bg-blue-500 flex flex-row justify-between">
-                    <div className="bg-green-500 h-[50px]">Это название страницы</div>
+            <div className="flex-1">
+                <div className="flex flex-row justify-between">
+
+                    {/*<div className="bg-green-500 h-[50px]">Это название страницы</div>*/}
+                    <PageName/>
+
                     {/*Выбор темы приклеен к потолку*/}
-                    <div className="bg-green-500 h-fit">
-                        Это выбор темы
-                    </div>
+                    {/*<div className="bg-green-500 h-fit">*/}
+                    {/*    Это выбор темы*/}
+                    {/*</div>*/}
+                    <ThemeToggle/>
                 </div>
-                <div className="bg-blue-500 h-fit">
+                <div className="bg-blockColor h-fit flex flex-row justify-center p-2.5 rounded-r-2xl rounded-bl-2xl">
                     <Outlet/>
                 </div>
             </div>
