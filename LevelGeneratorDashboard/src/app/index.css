@@ -18,6 +18,7 @@ body{
   --background: #EFF7FF;
   --accent-green: #38C189;
   --accent-blue: #85BBF4;
+  --accent-red: #F48587;
 
 /*  Color grade*/
   --low-color: red;
@@ -37,6 +38,7 @@ body{
   --background: green;
   --accent-green: darkgreen;
   --accent-blue: blue;
+  --accent-red: red;
 
   /*  Color grade*/
   --low-color: red;

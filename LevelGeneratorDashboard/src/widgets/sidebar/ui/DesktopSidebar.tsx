@@ -12,7 +12,7 @@ const DesktopSidebar = () => {
     const isCollapsed = sidebarState === "minimised";
 
     return (
-        <div className={`animated transition-[width] duration-100 ease-in-out
+        <div className={`overflow-hidden animated transition-[width] duration-100 ease-in-out
          ${isCollapsed ? 'w-[55px]' : 'w-[250px]'} flex flex-col h-fit gap-2.5
             bg-blockColor rounded-lg
             `}>

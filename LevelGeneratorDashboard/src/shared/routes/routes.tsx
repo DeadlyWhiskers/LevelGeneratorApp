@@ -1,13 +1,11 @@
 import React from "react";
 import hammerIcon from "@/shared/assets/icons/hammer.png";
 import scalesIcon from "@/shared/assets/icons/scales.png";
+import EditorPage from "@/pages/editor-page";
 
 export const appRoutes = [
     {
-        path: '/', element: React.createElement(
-            'div',
-            {className: 'h-[200px]'},
-            'А тут контент'),
+        path: '/', element: <EditorPage/>,
         handle: {
             title: 'Редактор',
             icon: hammerIcon

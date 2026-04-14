@@ -13,6 +13,7 @@ export default {
         text: 'var(--text-color)',
         accentGreen: 'var(--accent-green)',
         accentBlue: 'var(--accent-blue)',
+        accentRed: 'var(--accent-red)',
         lowColor: 'var(--low-color)',
         lowBackground: 'var(--low-background)',
         mediumColor: 'var(--medium-color)',

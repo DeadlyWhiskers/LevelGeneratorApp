@@ -28,7 +28,7 @@ const Layout = () => {
                     {/*</div>*/}
                     <ThemeToggle/>
                 </div>
-                <div className="bg-blockColor h-fit flex flex-row justify-center p-2.5 rounded-r-2xl rounded-bl-2xl">
+                <div className="bg-blockColor h-fit flex flex-col gap-5 justify-center p-2.5 rounded-r-2xl rounded-bl-2xl">
                     <Outlet/>
                 </div>
             </div>
