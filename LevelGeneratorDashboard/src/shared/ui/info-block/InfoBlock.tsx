@@ -17,9 +17,9 @@ const InfoBlock = ({titleH1, titleH2, className, childrenClassName, children}: I
             {titleH2 && <h1>
                 {titleH2}
             </h1>}
-            <div className={`${childrenClassName}`}>
+            {!!children && <div className={`${childrenClassName} flex gap-2.5`}>
                 {children}
-            </div>
+            </div>}
         </div>
     );
 };

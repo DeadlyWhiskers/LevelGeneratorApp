@@ -8,7 +8,7 @@ body{
   padding: 0;
   background-color: var(--background);
   block-color: var(--block-color);
-  }
+}
 
 :root {
   font-family: Roboto, serif;

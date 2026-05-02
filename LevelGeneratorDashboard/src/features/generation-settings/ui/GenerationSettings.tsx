@@ -11,7 +11,7 @@ type GenerationSettingsProps = {
 
 const GenerationSettings = ({className, children}: GenerationSettingsProps) => {
     return (
-        <InfoBlock className={`${className}`} titleH1='Параметры уровня'>
+        <InfoBlock className={`${className}`} childrenClassName='h-full flex-col' titleH1='Параметры уровня'>
             <BasicRow>
                 <label htmlFor="genMethods">Метод генерации:</label>
                 <Dropdown name={"genMethods"} id={"genMethods"} options={[
