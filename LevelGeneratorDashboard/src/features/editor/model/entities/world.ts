@@ -1,10 +1,12 @@
-import { Application, Container, FederatedPointerEvent, FederatedWheelEvent, Sprite } from "pixi.js";
+import { Application, Container, FederatedPointerEvent, FederatedWheelEvent, Graphics, Sprite, Texture, TilingSprite } from "pixi.js";
 import type { dimensions } from "../types/dimensions";
 import type { field } from "../types/field";
 import type TilesetManager from "../lib/TilesetManager";
 
 export default class World {
     private isDragging = false
+    private isDrawing = false
+    private lastPlacedCoords: dimensions = { x: -1, y: -1 }
     // Управляет движением камеры/приближением
     public worldContainer: Container = new Container()
     public worldBaselineDimensions: dimensions = { x: 640, y: 480 }
@@ -21,14 +23,14 @@ export default class World {
         baselineWidth: 480,
         scale: 1, // Зум КАМЕРЫ
         position: { x: 64, y: 64 }, // Не используем
-        tiles: [[]]
+        tiles: [[]],
+        hoverSelection: new Graphics(),
+        backgroundTilingSprite: new TilingSprite()
     }
 
     constructor() {
 
     }
-    // ----------------------------------------------------------
-    // Сделать так, чтобы задний фон состоял из повторяющейся текстуры пола, а на неё уже добавлялись элементы
     // ----------------------------------------------------------
 
     private async load(tilesetManager: TilesetManager, editorApp: Application, tileMap: string[][]) {
@@ -38,12 +40,33 @@ export default class World {
         // Добавляем детишек в контейнер мира
         this.field.container.removeChildren().map(e => e.destroy())
         this.field.tiles = []
+
+        // Добавляем задний фон
+        this.field.backgroundTilingSprite = new TilingSprite({
+            texture: tilesetManager.getTexture('Floor'),
+            width: tileMap[0].length * 16,
+            height: tileMap.length * 16
+        })
+        this.field.container.addChild(this.field.backgroundTilingSprite)
+
+        // Добавляем удалённый ранее курсор
+        this.field.hoverSelection = new Graphics()
+            .rect(0, 0, 16, 16)
+            .fill({ color: '8040C0', alpha: 0.3 })
+            .stroke({ pixelLine: true, color: 'black' })
+        this.field.container.addChild(this.field.hoverSelection)
+        this.field.hoverSelection.zIndex = 99
+        this.field.hoverSelection.visible = false
+
+
         if (this.tilesetManager) {
             tileMap.forEach((row, rn) => {
                 const spriteRow: Sprite[] = []
                 row.forEach((el, cn) => {
                     const tile = new Sprite()
-                    tile.texture = (this.tilesetManager as TilesetManager).getTexture(el)
+                    if (el === 'Floor') tile.texture = Texture.EMPTY
+                    else tile.texture = (this.tilesetManager as TilesetManager).getTexture(el)
+
                     this.field.container?.addChild(tile)
                     spriteRow.push(tile)
 
@@ -92,34 +115,78 @@ export default class World {
         await this.load(tilesetManager, editorApp, tileMap)
         // Установка размера хитбокса
         this.worldContainer.hitArea = editorApp.screen
+        this.worldContainer.eventMode = 'static'
 
         // Добавление масштабирования и перемещения
         editorApp.canvas.addEventListener('contextmenu', e => e.preventDefault());
-        this.worldContainer.eventMode = 'static'
         this.worldContainer.on('wheel', e => {
             this.zoom(e, editorApp)
         })
-        this.worldContainer.on('pointerdown', () => {
-            this.isDragging = true
+        this.worldContainer.on('pointerdown', (e) => {
+            if (e.button === 0) {
+                this.isDrawing = true
+            }
+            if (e.button === 2) {
+                this.isDragging = true
+                this.worldContainer.cursor = 'move'
+            }
         })
         this.worldContainer.on('pointerup', (e) => {
             this.isDragging = false
+            this.isDrawing = false
+            this.worldContainer.cursor = 'auto'
+
             // Установка блока
-            if (e.button === 0) {
+            // Получаем координаты курсора
+            const pointerCoords = this.field.container.toLocal(e.global)
+            // Высчитываем колонку и строку
+            const col = Math.floor(pointerCoords.x / 16);
+            const row = Math.floor(pointerCoords.y / 16);
+
+            // Не ставим блок в то же место, где уже поставили
+            if (e.button === 0 && (this.lastPlacedCoords.x != col || this.lastPlacedCoords.y != row)) {
                 this.handlePlacement(e)
             }
+            this.lastPlacedCoords = { x: -1, y: -1 }
         })
         this.worldContainer.on('pointermove', e => {
-            if (!this.isDragging) return
-            if (e.buttons === 2) {
+            // Обработка перетаскивания
+            if (this.isDragging && e.buttons === 2) {
                 const movement = e.movement
 
                 this.field.container.position.set(
                     this.field.container.position.x + movement.x,
                     this.field.container.position.y += movement.y
                 )
-
+                return
             }
+
+            // Получаем координаты курсора
+            const pointerCoords = this.field.container.toLocal(e.global)
+            // Высчитываем колонку и строку
+            const col = Math.floor(pointerCoords.x / 16);
+            const row = Math.floor(pointerCoords.y / 16);
+
+            // Установка выдилителя
+            const cursorOnField = row >= 0 && row < this.field.tiles.length && col >= 0 && col < this.field.tiles[row].length
+
+            if (cursorOnField) {
+                this.worldContainer.cursor = 'pointer'
+                this.field.hoverSelection.visible = true;
+                this.field.hoverSelection.position.set(col * 16, row * 16);
+            } else {
+                this.worldContainer.cursor = 'auto'
+                this.field.hoverSelection.visible = false;
+            }
+
+            // Рисование
+            console.log(this.lastPlacedCoords, '- последние')
+            console.log(row, col, '- текущие')
+            if (this.isDrawing && (this.lastPlacedCoords.x != col || this.lastPlacedCoords.y != row)) {
+                this.handlePlacement(e)
+                this.lastPlacedCoords = { x: col, y: row }
+            }
+
         })
         this.render(editorApp)
 
@@ -157,15 +224,17 @@ export default class World {
     private handlePlacement(e: FederatedPointerEvent) {
         // Получаем координаты
         const pointerCoords = this.field.container.toLocal(e.global)
-        
+
         const col = Math.floor(pointerCoords.x / 16);
         const row = Math.floor(pointerCoords.y / 16);
-                
-        if (row >= 0 && row < this.field.tiles.length && col >= 0 && col < this.field.tiles[row].length) {
-            
-            const activeBrush = 'Wall';
 
-            if(this.tilesetManager) this.field.tiles[row][col].texture = this.tilesetManager?.getTexture(activeBrush);
+        const cursorOnField = row >= 0 && row < this.field.tiles.length && col >= 0 && col < this.field.tiles[row].length
+
+        if (cursorOnField) {
+
+            const activeBrush = 'Wall';
+            // Добавить пороверку на существуюшее имя, чтобы сделать рисование
+            if (this.tilesetManager) this.field.tiles[row][col].texture = this.tilesetManager?.getTexture(activeBrush);
 
             console.log(`Placed block at (${row}, ${col}) [${activeBrush}]`);
         }
