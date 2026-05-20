@@ -2,10 +2,20 @@ import { Application, Container, FederatedPointerEvent, FederatedWheelEvent, Gra
 import type { dimensions } from "../types/dimensions";
 import type { field } from "../types/field";
 import type TilesetManager from "../lib/TilesetManager";
+import type Editor from "../editor";
+import type { mapTile } from "../types/mapTile";
 
 export default class World {
+    // Флаги
     private isDragging = false
     private isDrawing = false
+
+    // Лимит-флаги блоков старт/финиш
+    private hasHero = false
+    private heroTileName = 'Hero'
+    private hasFinish = false
+    private finishTileName = 'Finish'
+
     private lastPlacedCoords: dimensions = { x: -1, y: -1 }
     // Управляет движением камеры/приближением
     public worldContainer: Container = new Container()
@@ -13,6 +23,7 @@ export default class World {
     private worldLastDimensions: dimensions = { x: 640, y: 480 }
 
     private tilesetManager: TilesetManager | null = null
+    private editorContext: Editor | null = null
 
     // Непосроедственно поле для строительства
     // 
@@ -23,7 +34,7 @@ export default class World {
         baselineWidth: 480,
         scale: 1, // Зум КАМЕРЫ
         position: { x: 64, y: 64 }, // Не используем
-        tiles: [[]],
+        tiles: [],
         hoverSelection: new Graphics(),
         backgroundTilingSprite: new TilingSprite()
     }
@@ -33,17 +44,17 @@ export default class World {
     }
     // ----------------------------------------------------------
 
-    private async load(tilesetManager: TilesetManager, editorApp: Application, tileMap: string[][]) {
+    private async load(editorApp: Application, tileMap: string[][]) {
 
-        // Берем менеджер
-        this.tilesetManager = tilesetManager
+        // Без менеджера не грузим
+        if (this.tilesetManager === null) return
         // Добавляем детишек в контейнер мира
         this.field.container.removeChildren().map(e => e.destroy())
         this.field.tiles = []
 
         // Добавляем задний фон
         this.field.backgroundTilingSprite = new TilingSprite({
-            texture: tilesetManager.getTexture('Floor'),
+            texture: this.tilesetManager.getTexture('Floor'),
             width: tileMap[0].length * 16,
             height: tileMap.length * 16
         })
@@ -61,18 +72,18 @@ export default class World {
 
         if (this.tilesetManager) {
             tileMap.forEach((row, rn) => {
-                const spriteRow: Sprite[] = []
+                const tileRow: mapTile[] = []
                 row.forEach((el, cn) => {
-                    const tile = new Sprite()
-                    if (el === 'Floor') tile.texture = Texture.EMPTY
-                    else tile.texture = (this.tilesetManager as TilesetManager).getTexture(el)
+                    const sprite = new Sprite()
+                    if (el === 'Floor') sprite.texture = Texture.EMPTY
+                    else sprite.texture = (this.tilesetManager as TilesetManager).getTexture(el)
 
-                    this.field.container?.addChild(tile)
-                    spriteRow.push(tile)
+                    this.field.container?.addChild(sprite)
+                    tileRow.push({tileName: el, sprite: sprite})
 
-                    tile.position.set(cn * 16, rn * 16)
+                    sprite.position.set(cn * 16, rn * 16)
                 })
-                this.field.tiles.push(spriteRow)
+                this.field.tiles.push(tileRow)
             })
         }
 
@@ -111,8 +122,10 @@ export default class World {
         this.worldLastDimensions.y = editorApp.renderer.height
     }
 
-    public async init(editorApp: Application, tilesetManager: TilesetManager, tileMap: string[][]) {
-        await this.load(tilesetManager, editorApp, tileMap)
+    public async init(editorApp: Application, tilesetManager: TilesetManager, editorContext: Editor, tileMap: string[][]) {
+        this.editorContext = editorContext
+        this.tilesetManager = tilesetManager
+        await this.load(editorApp, tileMap)
         // Установка размера хитбокса
         this.worldContainer.hitArea = editorApp.screen
         this.worldContainer.eventMode = 'static'
@@ -180,8 +193,8 @@ export default class World {
             }
 
             // Рисование
-            console.log(this.lastPlacedCoords, '- последние')
-            console.log(row, col, '- текущие')
+            // console.log(this.lastPlacedCoords, '- последние')
+            // console.log(row, col, '- текущие')
             if (this.isDrawing && (this.lastPlacedCoords.x != col || this.lastPlacedCoords.y != row)) {
                 this.handlePlacement(e)
                 this.lastPlacedCoords = { x: col, y: row }
@@ -231,10 +244,31 @@ export default class World {
         const cursorOnField = row >= 0 && row < this.field.tiles.length && col >= 0 && col < this.field.tiles[row].length
 
         if (cursorOnField) {
+            const activeBrush = this.editorContext?.selectedBlock
+            // Если флаг не позволяет - не ставим блок
+            if(activeBrush === this.heroTileName && this.hasHero === true) {
+                console.log('Cannot place another hero')
+                return
+            }
+            if(activeBrush === this.finishTileName && this.hasFinish === true) {
+                console.log('Cannot place another finish')
+                return
+            }
 
-            const activeBrush = 'Wall';
-            // Добавить пороверку на существуюшее имя, чтобы сделать рисование
-            if (this.tilesetManager) this.field.tiles[row][col].texture = this.tilesetManager?.getTexture(activeBrush);
+            // Проверяем наличие блока финиша и старта и освобождаем флаги
+            if(this.field.tiles[row][col].tileName === this.finishTileName) this.hasFinish = false
+            if(this.field.tiles[row][col].tileName === this.heroTileName) this.hasHero = false
+
+            // Ставим блок
+            if (this.tilesetManager && activeBrush) {
+                this.field.tiles[row][col].tileName = activeBrush
+                if (activeBrush !== 'Floor') this.field.tiles[row][col].sprite.texture = this.tilesetManager?.getTexture(activeBrush)
+                    else this.field.tiles[row][col].sprite.texture = Texture.EMPTY
+            }
+
+            // Устанавливаем флаги уникальных блоков
+            if(activeBrush === this.heroTileName) this.hasHero = true
+            if(activeBrush === this.finishTileName) this.hasFinish = true
 
             console.log(`Placed block at (${row}, ${col}) [${activeBrush}]`);
         }

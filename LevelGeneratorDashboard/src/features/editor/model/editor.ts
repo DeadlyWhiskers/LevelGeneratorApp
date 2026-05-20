@@ -11,7 +11,10 @@ export default class Editor {
     public editorContainer: HTMLDivElement
     public resizeObserver: ResizeObserver
     private timeoutId: number | null
+
     private palette: Palette | null = null
+    public selectedBlock: string = 'Wall'
+
     private world: World | null = null
 
     private uiLayer: UiLayer | null = null
@@ -42,6 +45,10 @@ export default class Editor {
         }))
 
         this.createInitialObjects()
+    }
+
+    public setSelectedBlock(newBlock: string) {
+        this.selectedBlock = newBlock
     }
 
     // Method to resize the canvas
@@ -84,7 +91,7 @@ export default class Editor {
         this.editor.stage.addChild(this.worldLayer.renderLayer, this.uiLayer.renderLayer)
 
         // Инициализация ui и мира
-        this.world.init(this.editor, this.tilesetManager, [['Floor', 'Floor', 'Floor', 'Floor', 'Floor', 'Floor', 'Floor', 'Floor', 'Floor', 'Floor', 'Floor', 'Floor', 'Floor', 'Floor'],
+        this.world.init(this.editor, this.tilesetManager, this, [['Floor', 'Floor', 'Floor', 'Floor', 'Floor', 'Floor', 'Floor', 'Floor', 'Floor', 'Floor', 'Floor', 'Floor', 'Floor', 'Floor'],
         ['Floor', 'Floor', 'Floor', 'Floor', 'Floor', 'Floor', 'Floor', 'Floor', 'Floor', 'Floor', 'Floor', 'Floor', 'Floor', 'Floor'],
     ['Floor', 'Floor', 'Floor', 'Floor', 'Floor', 'Floor', 'Floor', 'Floor', 'Floor', 'Floor', 'Floor', 'Floor', 'Floor', 'Floor'],
 ['Floor', 'Floor', 'Floor', 'Floor', 'Floor', 'Floor', 'Floor', 'Floor', 'Floor', 'Floor', 'Floor', 'Floor', 'Floor', 'Floor'],
@@ -98,7 +105,7 @@ export default class Editor {
 ['Floor', 'Floor', 'Floor', 'Floor', 'Floor', 'Floor', 'Floor', 'Floor', 'Floor', 'Floor', 'Floor', 'Floor', 'Floor', 'Floor'],
 ['Floor', 'Floor', 'Floor', 'Floor', 'Floor', 'Floor', 'Floor', 'Floor', 'Floor', 'Floor', 'Floor', 'Floor', 'Floor', 'Floor'],
 ['Floor', 'Floor', 'Floor', 'Floor', 'Floor', 'Floor', 'Floor', 'Floor', 'Floor', 'Floor', 'Floor', 'Floor', 'Floor', 'Floor']])
-        this.palette.init()
+        this.palette.init(this.tilesetManager, this)
         
         console.log('Scene created')
     }

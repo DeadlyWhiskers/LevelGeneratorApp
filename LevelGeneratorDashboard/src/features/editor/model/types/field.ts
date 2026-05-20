@@ -1,5 +1,6 @@
-import type { Container, Graphics, Sprite, TilingSprite } from "pixi.js"
+import type { Container, Graphics, TilingSprite } from "pixi.js"
 import type { dimensions } from "./dimensions"
+import type { mapTile } from "./mapTile"
 
 export type field = {
     container: Container 
@@ -7,7 +8,7 @@ export type field = {
     scale: number
     // Возможно переделаю в относительное смещение
     position: dimensions,
-    tiles: Sprite[][],
+    tiles: mapTile[][],
     hoverSelection: Graphics,
     backgroundTilingSprite: TilingSprite
 }
