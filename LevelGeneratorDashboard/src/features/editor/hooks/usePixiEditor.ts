@@ -18,6 +18,7 @@ export const usePixiEditor = () => {
         const current = containerRef.current;
         if (!current) return;
         if (appRef.current) return;
+        let isDestroyed = false;
 
         // Preventing mouse scroll
         const preventDefaultScroll = (e: WheelEvent) => {
@@ -31,36 +32,69 @@ export const usePixiEditor = () => {
 
         // Creating the pixi app
         const initPixi = async () => {
-            await app.init({
-                background: 'black',
-                autoDensity: true
-            })
+            try {
+                await app.init({
+                    background: 'black',
+                    autoDensity: true,
+                    antialias: true
+                })
 
-            current?.appendChild(app.canvas);
+                if (isDestroyed) {
+                    if (app.renderer) {
+                        app.destroy(true, { children: true, texture: true });
+                    }
+                    appRef.current = null;
+                    return;
+                }
 
-            // Canvas resize
-            const width = current.clientWidth;
-            app.renderer.resize(width, width)
+                current?.appendChild(app.canvas);
 
+                // Canvas resize
+                const width = current.clientWidth;
+                app.renderer.resize(width, width)
+
+                // Here lies all the logic for editor
+                editorRef.current = new Editor(app, current)
+                editorRef.current.resizeObserver.observe(current)
+                console.log('Создал редактор')
+            }
+            catch (e) {
+                console.log('Ошибка создания редактора', e)
+            }
         }
         initPixi()
-        
-        // Here lies all the logic for editor
-        editorRef.current = new Editor(app, current)
-        editorRef.current.resizeObserver.observe(current)
-
-        // console.log(current.clientWidth)
 
         return () => {
-            // Если руки дойдут, переделать всё на editor
-            if (app.renderer) {
-                app.destroy();
-                appRef.current = null;
+            isDestroyed = true
+            console.log('Вызов return')
+            if (current) {
+                current.removeEventListener('wheel', preventDefaultScroll);
+            }
+            if (editorRef.current) {
+                // Удаление редактора как класса
                 editorRef.current?.resizeObserver.unobserve(current)
                 editorRef.current?.resizeObserver.disconnect()
-                // Удаление вроде работает
                 editorRef.current?.editor.destroy()
                 editorRef.current = null
+                console.log('Удалил редактор')
+            }
+            try {
+                if (appRef.current && appRef.current.renderer) {
+                    // Костыльный фикс
+                    if (app && !('_cancelResize' in app)) {
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        (app as any)._cancelResize = () => { };
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    } else if (app && typeof (app as any)._cancelResize !== 'function') {
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        (app as any)._cancelResize = () => { };
+                    }
+                    appRef.current.destroy(true, { children: true, texture: true });
+                }
+                appRef.current = null;
+                console.log('Удалил приложение PIXI и очистил WebGL контекст');
+            } catch (error) {
+                console.error('Ошибка при app.destroy():', error);
             }
         }
     }, [])

@@ -19,7 +19,10 @@ export default class World {
     private lastPlacedCoords: dimensions = { x: -1, y: -1 }
     // Управляет движением камеры/приближением
     public worldContainer: Container = new Container()
+
+    // Для пересчёта размера при ресайзе
     public worldBaselineDimensions: dimensions = { x: 640, y: 480 }
+    // Для пересчёта положения при ресайзе
     private worldLastDimensions: dimensions = { x: 640, y: 480 }
 
     private tilesetManager: TilesetManager | null = null
@@ -69,7 +72,7 @@ export default class World {
         this.field.hoverSelection.zIndex = 99
         this.field.hoverSelection.visible = false
 
-
+        // Добавляем тайлы на поле
         if (this.tilesetManager) {
             tileMap.forEach((row, rn) => {
                 const tileRow: mapTile[] = []
@@ -86,13 +89,27 @@ export default class World {
                 this.field.tiles.push(tileRow)
             })
         }
+        // Делаем поле немного меньше экрана
+        // Размеры по тайлам
+        const cols = (this.field.tiles[-1] !== undefined) ? this.field.tiles[-1].length : 10
+        const rows = this.field.tiles.length ? this.field.tiles.length : 10
+        const byTileWidth = cols * 16
+        const byTileHeight = rows * 16
 
+        if(byTileWidth > byTileHeight){
+            this.field.scale = (editorApp.canvas.width/byTileWidth * 0.8)
+        }else{
+            this.field.scale = (editorApp.canvas.height/byTileHeight * 0.8)
+        }  
+
+        // Запоминаем базовые размеры канваса для ресайза
+        this.worldBaselineDimensions.x = editorApp.canvas.width;
+        this.worldBaselineDimensions.y = editorApp.canvas.height;
+
+
+        // Устанавливаем в центр поля поле
         this.field.container.pivot.set(this.field.container.width / 2, this.field.container.height / 2)
         this.field.container.position.set(editorApp.canvas.width / 2, editorApp.canvas.height / 2)
-        // Высчитывать из соотношения, что одна клетка = 16 пискелей
-        // Заменить якорь на пивот и устанавливать его при рендере
-        // this.worldSprite.anchor.set(0.5)
-        // this.worldSprite.scale.set(this.field.baselineWidth / this.worldSprite?.texture.width)
     }
 
     // Рендер вызывается из вне

@@ -1,6 +1,5 @@
-import { Application, Assets, Container, Graphics, Sprite, type Size } from "pixi.js";
+import { Container, Graphics, Sprite, type Size } from "pixi.js";
 import type { dimensions } from "../types/dimensions";
-import appleAsset from '@/features/editor/model/assets/applePlaceholder.png'
 import type TilesetManager from "../lib/TilesetManager";
 import type Editor from "../editor";
 import type { paletteButton } from "../types/paletteButton";
@@ -18,7 +17,7 @@ export default class Palette {
     private buttonScale: number = 1
     private buttonSize: Size = { width: 0, height: 0 }
 
-    private paletteBlocks: Array<string> = ['Wall', 'Floor', 'Collectable', 'Enemy', 'Hero', 'Start', 'Finish']
+    private paletteBlocks: Array<string> = ['Wall', 'Door', 'Floor', 'Collectable', 'Enemy', 'Hero', 'Start', 'Finish']
     private paletteButtons: Array<paletteButton> = []
     private selectedBlockButton: paletteButton | null = null
 
@@ -32,16 +31,16 @@ export default class Palette {
     }
 
     // Загрузка объектов в палитру (потом переделать, передав сюда тайлсет и создавать кликабельные)
-    async load(tilesetManager: TilesetManager, editorContext: Editor) {
-        this.tilesetManager = tilesetManager
+    async load(editorContext: Editor) {
+        if(this.tilesetManager === null) return
         // Создание кнопок палитры
         for (const block of this.paletteBlocks) {
-            const texture = tilesetManager.getTexture(block)
+            const texture = this.tilesetManager.getTexture(block)
             this.paletteButtons.push({
                 blockName: block,
                 sprite: new Sprite(texture),
                 container: new Container,
-                background: new Graphics().rect(0, 0, 20, 20).fill({ color: 'white', alpha: 0.6 })
+                background: new Graphics().rect(0, 0, 20, 20).fill({ color: 'white'})
             })
 
             const currentButton = this.paletteButtons.at(-1)
@@ -53,23 +52,23 @@ export default class Palette {
                 currentButton?.sprite.setSize(16, 16)
 
                 // Красим кнопку
-                currentButton.background.alpha = 0.6
                 // Это в зависимости от текущего блока в редакторе
-                if(currentButton.blockName === editorContext.selectedBlock) this.highlightButton(currentButton)
+                if(currentButton.blockName === editorContext.selectedBlock) {
+                    this.selectedBlockButton = currentButton
+                    this.highlightButton(currentButton)
+                }
                     else this.unHighlightButton(currentButton)
 
 
                 // Добавляем выбор блоков
                 currentButton.container.eventMode = 'static'
                 currentButton.container.on('pointerover', () => {
-                    currentButton.container.cursor = 'pointer'   
-                    currentButton.background.alpha = 1
+                    currentButton.container.cursor = 'pointer'
                     currentButton.container.scale = this.buttonScale * 1.1                               
                 })
 
                 currentButton.container.on('pointerout', () => {
-                    currentButton.container.cursor = 'auto'                                    
-                    currentButton.background.alpha = 0.6
+                    currentButton.container.cursor = 'auto'
                     currentButton.container.scale = this.buttonScale                              
                 })
 
@@ -88,7 +87,7 @@ export default class Palette {
     }
 
     private highlightButton(button: paletteButton){
-        button.background.tint = 'white'
+        button.background.tint = '#888888'
     }
 
     private unHighlightButton(button: paletteButton){
@@ -136,11 +135,12 @@ export default class Palette {
                 this.baselineDimensions.x,
                 y - this.baselineGap + this.baselinePadding
             )
-            .fill({ color: '#676767', alpha: 0.6 })
+            .fill({ color: '#424242', alpha: 1 })
     }
 
     public async init(tilesetManager: TilesetManager, editorContext: Editor) {
-        await this.load(tilesetManager, editorContext)
+        this.tilesetManager = tilesetManager
+        await this.load(editorContext)
         this.paletteContainer.eventMode = 'static'
 
         this.paletteContainer.on('wheel', (e) => {

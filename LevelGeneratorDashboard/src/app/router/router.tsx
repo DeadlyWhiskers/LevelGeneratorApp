@@ -10,13 +10,6 @@ export const router = createBrowserRouter([{
             ...route,
             index: route.path === '/'
         }))
-        // {
-        //     path: 'thirdlink', element: React.createElement(
-        //         'div',
-        //         {className: 'h-[200px]'},
-        //         'Третья страничка')
-        // }
-
     }
     ])
-;
+;   

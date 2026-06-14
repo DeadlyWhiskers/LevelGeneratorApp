@@ -26,7 +26,8 @@
    { "name": "Cross", "color": "#0000ffff", "keys": [{ "frame": 0, "bounds": {"x": 48, "y": 0, "w": 16, "h": 16 } }] },
    { "name": "Collectable", "color": "#0000ffff", "keys": [{ "frame": 0, "bounds": {"x": 32, "y": 0, "w": 16, "h": 16 } }] },
    { "name": "Floor", "color": "#0000ffff", "keys": [{ "frame": 0, "bounds": {"x": 16, "y": 0, "w": 16, "h": 16 } }] },
-   { "name": "Wall", "color": "#0000ffff", "keys": [{ "frame": 0, "bounds": {"x": 0, "y": 0, "w": 16, "h": 16 } }] }
+   { "name": "Wall", "color": "#0000ffff", "keys": [{ "frame": 0, "bounds": {"x": 0, "y": 0, "w": 16, "h": 16 } }] },
+   { "name": "Door", "color": "#0000ffff", "keys": [{ "frame": 0, "bounds": {"x": 0, "y": 32, "w": 16, "h": 16 } }] }
   ]
  }
 }
