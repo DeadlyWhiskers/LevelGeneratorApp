@@ -4,6 +4,8 @@ import hammerIcon from "@/shared/assets/icons/hammer.png";
 import flaskIcon from "@/shared/assets/icons/flask15.png"
 import clipboardIcon from "@/shared/assets/icons/clipboard15.png"
 import EditorPage from "@/pages/editor-page";
+import ExperimentPage from "@/pages/experiment-page";
+import QueuePage from "@/pages/queue-page/ui/QueuePage";
 
 export const appRoutes = [
     {
@@ -14,20 +16,14 @@ export const appRoutes = [
         }
     },
     {
-        path: 'experiment', element: React.createElement(
-            'div',
-            {className: 'h-[200px]'},
-            'А тут что-то другое'),
+        path: 'experiment',element: <ExperimentPage/>,
         handle: {
             title: 'Тестирование',
             icon: flaskIcon
         }
     },
     {
-        path: 'experiments', element: React.createElement(
-            'div',
-            {className: 'h-[200px]'},
-            'А тут что-то другое'),
+        path: 'experiments', element: <QueuePage/>,
         handle: {
             title: 'Эксперименты',
             icon: clipboardIcon
